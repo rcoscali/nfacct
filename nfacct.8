@@ -1,0 +1,44 @@
+.TH NFACCT 8 "Dec 30, 2011" "" ""
+
+.\" Man page written by Pablo Neira Ayuso <pablo@netfilter.org> (Dec 2011)
+
+.SH NAME
+nfacct \- netfilter command line tool to manipulate user-defined patterns
+.SH SYNOPSIS
+.BR "nfacct command [parameters]"
+.SH DESCRIPTION
+.B nfacct
+is the command line tool that allows to manipulate the Netfilter's extended
+accounting infrastructure.
+.SH COMMANDS
+These options specify the particular operation mode in which nfacct runs. Only one of them can be specified at any given time.
+.TP
+.BI "list "
+List the existing accouting object in table.
+.TP
+.BI "add "
+Add new accounting object.
+.TP
+.BI "delete "
+Delete accounting object.
+.TP
+.BI "get "
+Get existing accounting object.
+.TP
+.BI "flush "
+Flush the entire table.
+.TP
+.BI "version "
+Displays the version information.
+.TP
+.BI "help "
+Displays the help message.
+.SH SEE ALSO
+.BR iptables (8)
+.SH BUGS
+Please, report them to netfilter-devel@vger.kernel.org or file a bug in
+Netfilter's bugzilla (https://bugzilla.netfilter.org).
+.SH AUTHORS
+Pablo Neira Ayuso wrote and maintains the nfacct tool.
+.PP
+Man page written by Pablo Neira Ayuso <pablo@netfilter.org>.
