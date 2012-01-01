@@ -150,6 +150,9 @@ static int nfacct_cmd_list(int argc, char *argv[])
 		if (strncmp(argv[2], "reset", strlen(argv[2])) == 0) {
 			zeroctr = true;
 		}
+	} else if (argc > 3) {
+		nfacct_perror("too many arguments");
+		return -1;
 	}
 
 	seq = time(NULL);
@@ -202,6 +205,9 @@ static int nfacct_cmd_add(int argc, char *argv[])
 
 	if (argc < 3) {
 		nfacct_perror("missing object name");
+		return -1;
+	} else if (argc > 3) {
+		nfacct_perror("too many arguments");
 		return -1;
 	}
 
@@ -264,6 +270,9 @@ static int nfacct_cmd_delete(int argc, char *argv[])
 
 	if (argc < 3) {
 		nfacct_perror("missing object name");
+		return -1;
+	} else if (argc > 3) {
+		nfacct_perror("too many arguments");
 		return -1;
 	}
 
@@ -329,12 +338,13 @@ static int nfacct_cmd_get(int argc, char *argv[])
 	if (argc < 3) {
 		nfacct_perror("missing object name");
 		return -1;
-	}
-
-	if (argc == 4) {
+	} else if (argc == 4) {
 		if (strncmp(argv[3], "reset", strlen(argv[3])) == 0) {
 			zeroctr = true;
 		}
+	} else if (argc > 4) {
+		nfacct_perror("too many arguments");
+		return -1;
 	}
 
 	nfacct = nfacct_alloc();
@@ -394,6 +404,11 @@ static int nfacct_cmd_flush(int argc, char *argv[])
 	struct nlmsghdr *nlh;
 	uint32_t portid, seq;
 	int ret;
+
+	if (argc > 2) {
+		nfacct_perror("too many arguments");
+		return -1;
+	}
 
 	seq = time(NULL);
 	nlh = nfacct_nlmsg_build_hdr(buf, NFNL_MSG_ACCT_DEL, NLM_F_ACK, seq);
