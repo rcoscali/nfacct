@@ -172,7 +172,7 @@ static int nfacct_cmd_list(int argc, char *argv[])
 
 	if (mnl_socket_sendto(nl, nlh, nlh->nlmsg_len) < 0) {
 		perror("mnl_socket_send");
-		exit(EXIT_FAILURE);
+		return -1;
 	}
 
 	ret = mnl_socket_recvfrom(nl, buf, sizeof(buf));
@@ -202,13 +202,13 @@ static int nfacct_cmd_add(int argc, char *argv[])
 
 	if (argc < 3) {
 		nfacct_perror("missing object name");
-		exit(EXIT_FAILURE);
+		return -1;
 	}
 
 	nfacct = nfacct_alloc();
 	if (nfacct == NULL) {
 		nfacct_perror("OOM");
-		exit(EXIT_FAILURE);
+		return -1;
 	}
 
 	nfacct_attr_set(nfacct, NFACCT_ATTR_NAME, argv[2]);
@@ -328,7 +328,7 @@ static int nfacct_cmd_get(int argc, char *argv[])
 
 	if (argc < 3) {
 		nfacct_perror("missing object name");
-		exit(EXIT_FAILURE);
+		return -1;
 	}
 
 	if (argc == 4) {
@@ -340,7 +340,7 @@ static int nfacct_cmd_get(int argc, char *argv[])
 	nfacct = nfacct_alloc();
 	if (nfacct == NULL) {
 		nfacct_perror("OOM");
-		exit(EXIT_FAILURE);
+		return -1;
 	}
 	nfacct_attr_set(nfacct, NFACCT_ATTR_NAME, argv[2]);
 
