@@ -177,7 +177,7 @@ static int nfacct_cmd_list(int argc, char *argv[])
 	portid = mnl_socket_get_portid(nl);
 
 	if (mnl_socket_sendto(nl, nlh, nlh->nlmsg_len) < 0) {
-		perror("mnl_socket_send");
+		nfacct_perror("mnl_socket_send");
 		return -1;
 	}
 
