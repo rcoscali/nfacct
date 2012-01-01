@@ -149,6 +149,9 @@ static int nfacct_cmd_list(int argc, char *argv[])
 	if (argc == 3) {
 		if (strncmp(argv[2], "reset", strlen(argv[2])) == 0) {
 			zeroctr = true;
+		} else {
+			nfacct_perror("wrong arguments");
+			return -1;
 		}
 	} else if (argc > 3) {
 		nfacct_perror("too many arguments");
@@ -341,6 +344,9 @@ static int nfacct_cmd_get(int argc, char *argv[])
 	} else if (argc == 4) {
 		if (strncmp(argv[3], "reset", strlen(argv[3])) == 0) {
 			zeroctr = true;
+		} else {
+			nfacct_perror("wrong arguments");
+			return -1;
 		}
 	} else if (argc > 4) {
 		nfacct_perror("too many arguments");
