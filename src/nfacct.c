@@ -112,10 +112,13 @@ int main(int argc, char *argv[])
 	return ret < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
+static bool xml_header = false;
+
 static int nfacct_cb(const struct nlmsghdr *nlh, void *data)
 {
 	struct nfacct *nfacct;
 	char buf[4096];
+	bool *xml = (bool *)data;
 
 	nfacct = nfacct_alloc();
 	if (nfacct == NULL) {
@@ -128,7 +131,16 @@ static int nfacct_cb(const struct nlmsghdr *nlh, void *data)
 		goto err_free;
 	}
 
-	nfacct_snprintf(buf, sizeof(buf), nfacct, NFACCT_SNPRINTF_F_FULL);
+	if (*xml && !xml_header) {
+		printf("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+			"<nfacct>\n");
+		xml_header = true;
+	}
+
+	nfacct_snprintf(buf, sizeof(buf), nfacct,
+			*xml ? NFACCT_SNPRINTF_T_XML :
+			       NFACCT_SNPRINTF_T_PLAIN,
+			NFACCT_SNPRINTF_F_FULL);
 	printf("%s\n", buf);
 
 err_free:
@@ -139,23 +151,22 @@ err:
 
 static int nfacct_cmd_list(int argc, char *argv[])
 {
-	bool zeroctr = false;
+	bool zeroctr = false, xml = false;
 	struct mnl_socket *nl;
 	char buf[MNL_SOCKET_BUFFER_SIZE];
 	struct nlmsghdr *nlh;
 	unsigned int seq, portid;
-	int ret;
+	int ret, i;
 
-	if (argc == 3) {
-		if (strncmp(argv[2], "reset", strlen(argv[2])) == 0) {
+	for (i=2; i<argc; i++) {
+		if (strncmp(argv[i], "reset", strlen(argv[2])) == 0) {
 			zeroctr = true;
+		} else if (strncmp(argv[i], "xml", strlen(argv[2])) == 0) {
+			xml = true;
 		} else {
-			nfacct_perror("wrong arguments");
+			nfacct_perror("unknown argument");
 			return -1;
 		}
-	} else if (argc > 3) {
-		nfacct_perror("too many arguments");
-		return -1;
 	}
 
 	seq = time(NULL);
@@ -183,7 +194,7 @@ static int nfacct_cmd_list(int argc, char *argv[])
 
 	ret = mnl_socket_recvfrom(nl, buf, sizeof(buf));
 	while (ret > 0) {
-		ret = mnl_cb_run(buf, ret, seq, portid, nfacct_cb, NULL);
+		ret = mnl_cb_run(buf, ret, seq, portid, nfacct_cb, &xml);
 		if (ret <= 0)
 			break;
 		ret = mnl_socket_recvfrom(nl, buf, sizeof(buf));
@@ -193,6 +204,9 @@ static int nfacct_cmd_list(int argc, char *argv[])
 		return -1;
 	}
 	mnl_socket_close(nl);
+
+	if (xml_header)
+		printf("</nfacct>\n");
 
 	return 0;
 }
@@ -330,27 +344,27 @@ static int nfacct_cmd_delete(int argc, char *argv[])
 
 static int nfacct_cmd_get(int argc, char *argv[])
 {
-	bool zeroctr = false;
+	bool zeroctr = false, xml = false;
 	struct mnl_socket *nl;
 	char buf[MNL_SOCKET_BUFFER_SIZE];
 	struct nlmsghdr *nlh;
 	uint32_t portid, seq;
 	struct nfacct *nfacct;
-	int ret;
+	int ret, i;
 
 	if (argc < 3) {
 		nfacct_perror("missing object name");
 		return -1;
-	} else if (argc == 4) {
-		if (strncmp(argv[3], "reset", strlen(argv[3])) == 0) {
+	}
+	for (i=3; i<argc; i++) {
+		if (strncmp(argv[i], "reset", strlen(argv[2])) == 0) {
 			zeroctr = true;
+		} else if (strncmp(argv[i], "xml", strlen(argv[2])) == 0) {
+			xml = true;
 		} else {
-			nfacct_perror("wrong arguments");
+			nfacct_perror("unknown argument");
 			return -1;
 		}
-	} else if (argc > 4) {
-		nfacct_perror("too many arguments");
-		return -1;
 	}
 
 	nfacct = nfacct_alloc();
@@ -389,7 +403,7 @@ static int nfacct_cmd_get(int argc, char *argv[])
 
 	ret = mnl_socket_recvfrom(nl, buf, sizeof(buf));
 	while (ret > 0) {
-		ret = mnl_cb_run(buf, ret, seq, portid, nfacct_cb, NULL);
+		ret = mnl_cb_run(buf, ret, seq, portid, nfacct_cb, &xml);
 		if (ret <= 0)
 			break;
 		ret = mnl_socket_recvfrom(nl, buf, sizeof(buf));
@@ -399,6 +413,9 @@ static int nfacct_cmd_get(int argc, char *argv[])
 		return -1;
 	}
 	mnl_socket_close(nl);
+
+	if (xml_header)
+		printf("</nfacct>\n");
 
 	return 0;
 }
