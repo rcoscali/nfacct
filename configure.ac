@@ -1,4 +1,4 @@
-AC_INIT(nfacct, 1.0.0-beta, pablo@netfilter.org)
+AC_INIT(nfacct, 1.0.0, pablo@netfilter.org)
 
 AC_CANONICAL_HOST
 
