@@ -5,13 +5,14 @@
 .SH NAME
 nfacct \- command line tool to create/retrieve/delete accounting objects
 .SH SYNOPSIS
-.BR "nfacct command [parameters]"
+.BR "nfacct command [name] [options]"
 .SH DESCRIPTION
 .B nfacct
 is the command line tool that allows to manipulate the Netfilter's extended
 accounting infrastructure.
 .SH COMMANDS
-These options specify the particular operation mode in which nfacct runs. Only one of them can be specified at any given time.
+These commands specify the action that nfacct performs. Only one of them can be
+specified at any given time.
 .TP
 .BI "list "
 List the existing accounting object in table.
@@ -33,6 +34,16 @@ Displays the version information.
 .TP
 .BI "help "
 Displays the help message.
+.SH OPTIONS
+.TP
+This tool also allows a couple of options with the get and list commands that are:
+.TP
+.BI "reset "
+That atomically obtains and resets the counters.
+.TP
+.BI "xml "
+That displays the output in XML format.
+.PP
 .SH SEE ALSO
 .BR iptables (8)
 .SH BUGS
