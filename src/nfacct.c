@@ -159,9 +159,9 @@ static int nfacct_cmd_list(int argc, char *argv[])
 	int ret, i;
 
 	for (i=2; i<argc; i++) {
-		if (strncmp(argv[i], "reset", strlen(argv[2])) == 0) {
+		if (strncmp(argv[i], "reset", strlen(argv[i])) == 0) {
 			zeroctr = true;
-		} else if (strncmp(argv[i], "xml", strlen(argv[2])) == 0) {
+		} else if (strncmp(argv[i], "xml", strlen(argv[i])) == 0) {
 			xml = true;
 		} else {
 			nfacct_perror("unknown argument");
@@ -357,9 +357,9 @@ static int nfacct_cmd_get(int argc, char *argv[])
 		return -1;
 	}
 	for (i=3; i<argc; i++) {
-		if (strncmp(argv[i], "reset", strlen(argv[2])) == 0) {
+		if (strncmp(argv[i], "reset", strlen(argv[i])) == 0) {
 			zeroctr = true;
-		} else if (strncmp(argv[i], "xml", strlen(argv[2])) == 0) {
+		} else if (strncmp(argv[i], "xml", strlen(argv[i])) == 0) {
 			xml = true;
 		} else {
 			nfacct_perror("unknown argument");
