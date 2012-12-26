@@ -31,6 +31,7 @@ enum {
 	NFACCT_CMD_FLUSH,
 	NFACCT_CMD_VERSION,
 	NFACCT_CMD_HELP,
+	NFACCT_CMD_RESTORE,
 };
 
 static int nfacct_cmd_list(int argc, char *argv[]);
@@ -40,6 +41,7 @@ static int nfacct_cmd_get(int argc, char *argv[]);
 static int nfacct_cmd_flush(int argc, char *argv[]);
 static int nfacct_cmd_version(int argc, char *argv[]);
 static int nfacct_cmd_help(int argc, char *argv[]);
+static int nfacct_cmd_restore(int argc, char *argv[]);
 
 static void usage(char *argv[])
 {
@@ -79,6 +81,8 @@ int main(int argc, char *argv[])
 		cmd = NFACCT_CMD_VERSION;
 	else if (strncmp(argv[1], "help", strlen(argv[1])) == 0)
 		cmd = NFACCT_CMD_HELP;
+	else if (strncmp(argv[1], "restore", strlen(argv[1])) == 0)
+		cmd = NFACCT_CMD_RESTORE;
 	else {
 		fprintf(stderr, "nfacct v%s: Unknown command: %s\n",
 			VERSION, argv[1]);
@@ -107,6 +111,9 @@ int main(int argc, char *argv[])
 		break;
 	case NFACCT_CMD_HELP:
 		ret = nfacct_cmd_help(argc, argv);
+		break;
+	case NFACCT_CMD_RESTORE:
+		ret = nfacct_cmd_restore(argc, argv);
 		break;
 	}
 	return ret < 0 ? EXIT_FAILURE : EXIT_SUCCESS;
@@ -211,7 +218,7 @@ static int nfacct_cmd_list(int argc, char *argv[])
 	return 0;
 }
 
-static int nfacct_cmd_add(int argc, char *argv[])
+static int _nfacct_cmd_add(char *name, int pkts, int bytes)
 {
 	struct mnl_socket *nl;
 	char buf[MNL_SOCKET_BUFFER_SIZE];
@@ -220,21 +227,16 @@ static int nfacct_cmd_add(int argc, char *argv[])
 	struct nfacct *nfacct;
 	int ret;
 
-	if (argc < 3) {
-		nfacct_perror("missing object name");
-		return -1;
-	} else if (argc > 3) {
-		nfacct_perror("too many arguments");
-		return -1;
-	}
-
 	nfacct = nfacct_alloc();
 	if (nfacct == NULL) {
 		nfacct_perror("OOM");
 		return -1;
 	}
 
-	nfacct_attr_set(nfacct, NFACCT_ATTR_NAME, argv[2]);
+	nfacct_attr_set(nfacct, NFACCT_ATTR_NAME, name);
+
+	nfacct_attr_set_u64(nfacct, NFACCT_ATTR_PKTS, pkts);
+	nfacct_attr_set_u64(nfacct, NFACCT_ATTR_BYTES, bytes);
 
 	seq = time(NULL);
 	nlh = nfacct_nlmsg_build_hdr(buf, NFNL_MSG_ACCT_NEW,
@@ -274,6 +276,21 @@ static int nfacct_cmd_add(int argc, char *argv[])
 	mnl_socket_close(nl);
 
 	return 0;
+}
+
+
+
+static int nfacct_cmd_add(int argc, char *argv[])
+{
+	if (argc < 3) {
+		nfacct_perror("missing object name");
+		return -1;
+	} else if (argc > 3) {
+		nfacct_perror("too many arguments");
+		return -1;
+	}
+
+	return _nfacct_cmd_add(argv[2], 0, 0);
 }
 
 static int nfacct_cmd_delete(int argc, char *argv[])
@@ -496,11 +513,38 @@ static const char help_msg[] =
 	"  delete object-name\tDelete existing accounting object\n"
 	"  get object-name\tGet existing accounting object\n"
 	"  flush\t\t\tFlush accounting object table\n"
+	"  restore\t\tRestore accounting object table reading 'list' output from stdin\n"
 	"  version\t\tDisplay version and disclaimer\n"
 	"  help\t\t\tDisplay this help message\n";
 
 static int nfacct_cmd_help(int argc, char *argv[])
 {
 	printf(help_msg, VERSION, argv[0]);
+	return 0;
+}
+
+static int nfacct_cmd_restore(int argc, char *argv[])
+{
+	uint64_t pkts, bytes;
+	char name[512];
+	char buffer[512];
+	int ret;
+	while (fgets(buffer, sizeof(buffer), stdin)) {
+		char *semicolon = strchr(buffer, ';');
+		if (semicolon == NULL) {
+			nfacct_perror("invalid line");
+			return -1;
+		}
+		*semicolon = 0;
+		ret = sscanf(buffer, "{ pkts = %lu, bytes = %lu } = %s",
+		       &pkts, &bytes, name);
+		if (ret != 3) {
+			nfacct_perror("error reading input");
+			return -1;
+		}
+		if ((ret = _nfacct_cmd_add(name, pkts, bytes)) != 0)
+			return ret;
+
+	}
 	return 0;
 }
