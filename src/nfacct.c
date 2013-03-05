@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
 #include <string.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -218,7 +219,7 @@ static int nfacct_cmd_list(int argc, char *argv[])
 	return 0;
 }
 
-static int _nfacct_cmd_add(char *name, int pkts, int bytes)
+static int _nfacct_cmd_add(char *name, uint64_t pkts, uint64_t bytes)
 {
 	struct mnl_socket *nl;
 	char buf[MNL_SOCKET_BUFFER_SIZE];
@@ -529,6 +530,7 @@ static int nfacct_cmd_restore(int argc, char *argv[])
 	char name[512];
 	char buffer[512];
 	int ret;
+
 	while (fgets(buffer, sizeof(buffer), stdin)) {
 		char *semicolon = strchr(buffer, ';');
 		if (semicolon == NULL) {
@@ -536,7 +538,8 @@ static int nfacct_cmd_restore(int argc, char *argv[])
 			return -1;
 		}
 		*semicolon = 0;
-		ret = sscanf(buffer, "{ pkts = %lu, bytes = %lu } = %s",
+		ret = sscanf(buffer,
+			     "{ pkts = %"PRIu64", bytes = %"PRIu64" } = %s",
 		       &pkts, &bytes, name);
 		if (ret != 3) {
 			nfacct_perror("error reading input");
