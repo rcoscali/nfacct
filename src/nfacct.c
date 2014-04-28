@@ -626,7 +626,7 @@ static int nfacct_cmd_monitor(int argc, char *argv[])
 	struct mnl_socket *nl;
 	bool xml = false;
 	char buf[MNL_SOCKET_BUFFER_SIZE];
-	int ret, stop = 0, option = NFNLGRP_ACCT_QUOTA;
+	int ret, option = NFNLGRP_ACCT_QUOTA;
 
 	nl = mnl_socket_open(NETLINK_NETFILTER);
 	if (nl == NULL) {
@@ -642,17 +642,16 @@ static int nfacct_cmd_monitor(int argc, char *argv[])
 	mnl_socket_setsockopt(nl, NETLINK_ADD_MEMBERSHIP,
 			      &option, sizeof(int));
 
-	while (!stop) {
+	while (1) {
 		ret = mnl_socket_recvfrom(nl, buf, sizeof(buf));
 		if (ret == -1) {
-			fprintf(stderr, "Problems receiving nfaccounting "
-					"notification - bailing out\n");
-			stop = 1;
+			perror("mnl_socket_recvfrom");
+			break;
 		}
 
 		ret = mnl_cb_run(buf, ret, 0, 0, nfacct_cb, &xml);
 		if (ret <= 0)
-			stop = 1;
+			break;
 	}
 
 	mnl_socket_close(nl);
