@@ -581,10 +581,6 @@ static int nfacct_cmd_restore(int argc, char *argv[])
 			return -1;
 		}
 
-		/* a single ';' terminates the input */
-		if (strncmp(buffer, ";", 1) == 0)
-			break;
-
 		*semicolon = 0;
 		ret = flags = 0;
 		quota = 0;
