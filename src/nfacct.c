@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <errno.h>
+#include <arpa/inet.h>
 
 #include <libmnl/libmnl.h>
 #include <libnetfilter_acct/libnetfilter_acct.h>
@@ -181,6 +182,7 @@ static int nfacct_cmd_list(int argc, char *argv[])
 	struct nlmsghdr *nlh;
 	unsigned int seq, portid;
 	int ret, i;
+	uint32_t mask = 0, value = 0;
 
 	for (i=2; i<argc; i++) {
 		if (strncmp(argv[i], "reset", strlen(argv[i])) == 0) {
@@ -191,6 +193,26 @@ static int nfacct_cmd_list(int argc, char *argv[])
 			if (xml)
 				duparg(argv[i]);
 			xml = true;
+		} else if (strncmp(argv[i], "counters", strlen(argv[i])) == 0) {
+			if (mask || value)
+				duparg(argv[i]);
+			mask = NFACCT_F_QUOTA_BYTES | NFACCT_F_QUOTA_PKTS;
+			value = 0;
+		} else if (strncmp(argv[i], "bytes-quota", strlen(argv[i])) == 0) {
+			if (mask || value)
+				duparg(argv[i]);
+			mask = NFACCT_F_QUOTA_BYTES;
+			value = NFACCT_F_QUOTA_BYTES;
+		} else if (strncmp(argv[i], "pkts-quota", strlen(argv[i])) == 0) {
+			if (mask || value)
+				duparg(argv[i]);
+			mask = NFACCT_F_QUOTA_PKTS;
+			value = NFACCT_F_QUOTA_PKTS;
+		} else if (strncmp(argv[i], "overquota", strlen(argv[i])) == 0) {
+			if (mask || value)
+				duparg(argv[i]);
+			mask = NFACCT_F_OVERQUOTA;
+			value = NFACCT_F_OVERQUOTA;
 		} else {
 			nfacct_perror("unknown argument");
 			return -1;
@@ -202,6 +224,13 @@ static int nfacct_cmd_list(int argc, char *argv[])
 					NFNL_MSG_ACCT_GET_CTRZERO :
 					NFNL_MSG_ACCT_GET,
 				     NLM_F_DUMP, seq);
+	if (mask || value) {
+		struct nlattr *nest = mnl_attr_nest_start(nlh, NFACCT_FILTER);
+
+		mnl_attr_put_u32(nlh, NFACCT_FILTER_MASK, htonl(mask));
+		mnl_attr_put_u32(nlh, NFACCT_FILTER_VALUE, htonl(value));
+		mnl_attr_nest_end(nlh, nest);
+	}
 
 	nl = mnl_socket_open(NETLINK_NETFILTER);
 	if (nl == NULL) {
