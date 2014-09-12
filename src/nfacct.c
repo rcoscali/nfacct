@@ -63,6 +63,13 @@ static void nfacct_perror(const char *msg)
 	}
 }
 
+static void duparg(const char *key)
+{
+	fprintf(stderr, "Error: duplicate \"%s\" or collision with another "
+		"option \n", key);
+	exit(EXIT_FAILURE);
+}
+
 int main(int argc, char *argv[])
 {
 	int cmd = NFACCT_CMD_NONE, ret = 0;
@@ -177,8 +184,12 @@ static int nfacct_cmd_list(int argc, char *argv[])
 
 	for (i=2; i<argc; i++) {
 		if (strncmp(argv[i], "reset", strlen(argv[i])) == 0) {
+			if (zeroctr)
+				duparg(argv[i]);
 			zeroctr = true;
 		} else if (strncmp(argv[i], "xml", strlen(argv[i])) == 0) {
+			if (xml)
+				duparg(argv[i]);
 			xml = true;
 		} else {
 			nfacct_perror("unknown argument");
