@@ -15,9 +15,9 @@ enum nfnl_acct_msg_types {
 };
 
 enum nfnl_acct_flags {
-	NFACCT_F_QUOTA_PKTS     = (1 << 0),
-	NFACCT_F_QUOTA_BYTES    = (1 << 1),
-	NFACCT_F_OVERQUOTA      = (1 << 2), /* can't be set from userspace */
+	NFACCT_F_QUOTA_PKTS	= (1 << 0),
+	NFACCT_F_QUOTA_BYTES	= (1 << 1),
+	NFACCT_F_OVERQUOTA	= (1 << 2), /* can't be set from userspace */
 };
 
 enum nfnl_acct_type {
@@ -39,15 +39,6 @@ enum nfnl_attr_filter_type {
 	NFACCT_FILTER_VALUE,
 	__NFACCT_FILTER_MAX
 };
+#define NFACCT_FILTER_MAX (__NFACCT_FILTER_MAX - 1)
 
-#ifdef __KERNEL__
-
-struct nf_acct;
-
-extern struct nf_acct *nfnl_acct_find_get(const char *filter_name);
-extern void nfnl_acct_put(struct nf_acct *acct);
-extern void nfnl_acct_update(const struct sk_buff *skb, struct nf_acct *nfacct);
-
-#endif /* __KERNEL__ */
-
-#endif /* _NFNL_ACCT_H */
+#endif /* _NFNL_ACCT_H_ */
