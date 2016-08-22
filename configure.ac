@@ -1,4 +1,4 @@
-AC_INIT(nfacct, 1.0.1, pablo@netfilter.org)
+AC_INIT(nfacct, 1.0.2, pablo@netfilter.org)
 
 AC_CANONICAL_HOST
 
@@ -20,7 +20,7 @@ case "$host" in
 esac
 
 PKG_CHECK_MODULES([LIBMNL], [libmnl >= 1.0.0])
-PKG_CHECK_MODULES([LIBNETFILTER_ACCT], [libnetfilter_acct >= 1.0.2])
+PKG_CHECK_MODULES([LIBNETFILTER_ACCT], [libnetfilter_acct >= 1.0.3])
 
 AC_CONFIG_FILES([Makefile src/Makefile include/Makefile include/linux/Makefile include/linux/netfilter/Makefile])
 AC_OUTPUT
