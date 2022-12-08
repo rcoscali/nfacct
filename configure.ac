@@ -3,7 +3,7 @@ AC_INIT(nfacct, 1.0.2, pablo@netfilter.org)
 AC_CANONICAL_HOST
 
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([-Wall foreign subdir-objects dist-bzip2 1.6])
+AM_INIT_AUTOMAKE([-Wall foreign subdir-objects no-dist-gzip dist-xz 1.6])
 
 dnl kernel style compile messages
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
