@@ -16,3 +16,7 @@ Makefile.in
 /ltmain.sh
 /missing
 /ylwrap
+
+src/nfacct
+
+compile
